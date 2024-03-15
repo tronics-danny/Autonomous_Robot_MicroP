@@ -1,0 +1,112 @@
+#include <util/atomic.h> // For the ATOMIC_BLOCK macro
+//encoder pin assignment
+#define ENCODER_A 3
+#define ENCODER_B 2
+
+//motor driver pin assignment
+int enB = 9;
+int in3 = 7;
+int in4 = 8;
+
+volatile int posi = 0; // specify posi as volatile
+//global variables for PID motor control
+long prevT = 0;
+float ePrev = 0;
+float eIntegral = 0;
+
+void setup()
+{
+  Serial.begin(9600);
+  //encoder pin defination
+  pinMode(ENCODER_A, INPUT);
+  pinMode(ENCODER_B, INPUT);
+  //motor driver pin defination
+  pinMode(enB, OUTPUT);
+  pinMode(in3, OUTPUT);
+  pinMode(in4, OUTPUT);
+  //interrupt that triggers whenever ENCODER_A goes from LOW to HIGH
+  attachInterrupt(digitalPinToInterrupt(ENCODER_A), readEncoder, RISING);
+}
+
+void loop()
+{
+  //int target = 1200; //motor position target
+  int target = 250*sin(prevT/1e6);
+  //PID constants
+  float Kp = 1;
+  float Kd = 0;
+  float Ki = 0;
+
+  long currT = micros();//returns the number of microseconds since the program began running
+  //long  eT = currT - prevT;
+  float deltaT = ((float)(currT - prevT))/1.0e6;
+  prevT = currT;
+
+  // Read the position in an atomic block to avoid a potential
+  // misread if the interrupt coincides with this code running
+  int pos = 0; 
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) 
+  {
+    pos = posi;
+  }
+  int e = pos - target;//error 
+  float deriv = (e - ePrev)/(deltaT);//derivative computation
+  eIntegral = eIntegral + e*deltaT;//integral computation
+
+  float u = Kp*e + Kd*deriv + Ki*eIntegral;//control signal
+  //motor power(inable to control the motor convert the signal into power)
+  float power = fabs(u);
+  if (power > 255)
+  {
+    power = 255;
+  }
+  //motor direction
+  int dir = 1;
+  if(u<0)
+  {
+    dir = -1;
+  }
+
+  setMotor(dir, power, enB, in3, in4);//signal the motor
+  
+  //store previous error
+  ePrev = e;
+
+  Serial.print(target);
+  Serial.print(" ");
+  Serial.print(pos);
+  Serial.println();
+}
+
+void setMotor(int dir, int speed, int enB, int in3, int in4)
+{
+  analogWrite(enB, speed);
+  if(dir == 1)
+  {
+    digitalWrite(in3, HIGH);
+    digitalWrite(in4, LOW);
+  }
+   else if(dir == 1)
+  {
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, HIGH);
+  }
+   else
+  {
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, LOW);
+  }
+}
+
+void readEncoder()
+{
+  int b = digitalRead(ENCODER_B);
+  if(b>0)
+  {
+    posi++;
+  }
+  else
+  {
+    posi--;
+  }
+}
