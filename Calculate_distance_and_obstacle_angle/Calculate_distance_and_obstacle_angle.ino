@@ -5,11 +5,11 @@
 #define EchoPin 35
 #define ServoPin 10
 
-// Defining minimuma nd maximum angles of rotation of the servo motor
+// Defining minimuma and maximum angles of rotation of the servo motor
 const int minAngle = 30;
 const int maxAngle = 135;
 
-// Defining speed of rotating the sedrvo motor
+// Defining speed of rotating the servo motor
 int step_Speed = 1;
 
 // Defining variables to store the current distance and current angle
