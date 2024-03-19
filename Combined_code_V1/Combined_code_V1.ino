@@ -19,8 +19,8 @@ int curr_Angle = 0;
 //Creating a class instance for the servo motor
 Servo RadarMotor;
 
-//Defining a variable to store min distance from the obstaclke that the robot can evade
-const int minDistance = 15;
+//Defining a variable to store min distance from the obstacle that the robot can evade
+const int minDis_Lim = 15;
 
 // Defining an array to store ultrasonic sensor values from whiuch we determine the direction the robot should move
 int distanceArray[4]; //leaving the array empty so we can fill it with sensor data
@@ -91,7 +91,7 @@ void CalculateDistance(){
   //Gettinmg Distance at specific servo angles
   if (curr_Angle==angle1 || curr_Angle==angle2 || curr_Angle==angle3 || curr_Angle==angle4 || curr_Angle==angle5)
   {
-        //satoring the distances read from the ultrasonic sensor to an array
+        //storing the distances read from the ultrasonic sensor to an array
         if(curr_Angle==angle1)
           {
             distanceArray[0] = curr_Distance;
@@ -121,36 +121,95 @@ void CalculateDistance(){
           {
             //do nothing      
           }
-      //Accessing the distances in the arrays and printing them on the serial monitor
-      //Determining the max distance recorder and the min distance recorded
-      for(int i=0; i<5; i++)
-        {
-          Serial.print("Distance: ");
-          Serial.print(distanceArray[i]);
-          Serial.println(" cm");
-          Serial.print("Current Angle: ");
-          Serial.print(angleArray[i]); 
-          Serial.println(" Degrees");
-          //Returning the max distance recorded
-          currVal1 = max(distanceArray[i],b);
-          b = currVal1;          
-        }
-        max_Dis = b;
-        a = max_Dis;
+        //Accessing the distances in the arrays and printing them on the serial monitor
+        //Determining the max distance recorder and the min distance recorded
+        for(int i=0; i<5; i++)
+          {
+            Serial.print("Distance: ");
+            Serial.print(distanceArray[i]);
+            Serial.println(" cm");
+            Serial.print("Current Angle: ");
+            Serial.print(angleArray[i]); 
+            Serial.println(" Degrees");
+            //Returning the max distance recorded
+            currVal1 = max(distanceArray[i],b);
+            b = currVal1;          
+          }
+          max_Dis = b;
+          a = max_Dis;
 
-        for(int i=0; i<5; i++){
-          currVal2 = min(distanceArray[i],a);
-          a = currVal2;
-        }
-        min_Dis = a;
+          for(int i=0; i<5; i++){
+            currVal2 = min(distanceArray[i],a);
+            a = currVal2;
+          }
+          min_Dis = a;
 
-        // Dont forget to call direction determinant function of the robot here  
+      // Dont forget to call direction determinant function of the robot here
+      det_Direction();  
 
   }
 
 }
 
 //Functon to compare the different distances from different angles and deciding on what direction to turn
-void DirAlg(){
+void det_Direction(){
+  max_Dis = max_Dis;
+  min_Dis = min_Dis;
 
+      if (min_Dis > minDis_Lim && max_Dis > minDis_Lim)
+        {
+          //Call funtion to move the robot strait forward
+
+        }
+        else if((distanceArray[0] <= minDis_Lim) && (distanceArray[1] > minDis_Lim && distanceArray[2] > minDis_Lim))
+        {
+          // Call a function to turn the robot slight left until the distance from the obstacle is large enough for robot to pass
+
+        }
+        else if((distanceArray[4] <= minDis_Lim) && (distanceArray[3] > minDis_Lim && distanceArray[2] > minDis_Lim))
+        {
+          // Call a function to turn the robot slight right until the distance from the obstacle is large enough for robot to pass
+
+
+        }
+        else if((distanceArray[2] <= 18) && (distanceArray[3] > 18 && distanceArray[4] > minDis_Lim))
+        {
+          // Call a function to turn the robot slight left 
+
+        }
+      else if((distanceArray[2] <= 18) && (distanceArray[1] > 18 && distanceArray[0] > minDis_Lim))
+        {
+          // Call a function to turn the robot slight right 
+
+        }
+        else if (max_Dis <= minDis_Lim)
+        {
+          // Call a function to reverse the robot straight
+
+        }
+        else
+        {
+          // Go forward
+        }
+
+}
+
+void Go_Straight_Forward(){
+  //Function for driving the robot straight forward
+
+}
+
+void Go_Straight_Backward(){
+  //Function for driving the robot straight backward
+  
+}
+
+void turn_Slight_Left(){
+  //Function for driving the robot slight left
+  
+}
+
+void turn_Slight_Right(){
+  //Function for driving the robot slight right
+  
 }
