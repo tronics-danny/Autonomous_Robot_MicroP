@@ -44,6 +44,107 @@ void loop() {
 
 }
 
+
+
+
+
+
+void ServoControl(int &angle){
+  //Move servo motor to the angle indicated
+  RadarMotor.write(angle);
+}
+
+int UltraRead(){
+  //Read detected distance by altrasonic
+  //Triger the ultrasonic sensor low
+  digitalWrite(TrigPin, LOW); 
+  delayMicroseconds(2);
+
+  //Triger the ultrasonic sensor High and delay for 10 micro-seconds then trig low
+  digitalWrite(TrigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TrigPin, LOW);
+
+  //Calculate distance from object
+  long duration = pulseIn(EchoPin, HIGH);
+  curr_Distance = duration * 0.0344 / 2; // Expression to calculate distance using time
+
+  return curr_Distance;
+
+}
+
+void DirControl(){
+  //Determine the direction in which the robot should go into
+  int angle1 = 30;
+  int angle2 = 56;
+  int angle3 = 82;
+  int angle4 = 108;
+  int angle5 = 135;
+
+  //Variable to store the current distance from the obstacle
+  int dist = 0;
+
+  ServoControl(angle3);
+  dist = UltraRead();
+  if(dist<minDis_Lim)
+    {
+      //Stop the robot, check for obstacles in the other angles
+      Stop();
+      ServoControl(angle2);
+      dist = UltraRead();
+      
+
+    }
+
+}
+
+void Stop(){
+  //Function for stopping the robot
+  Serial.println("STOP");
+
+}
+void Slow(){
+  //Function for slowing the robot down
+  Serial.println("SLOW DOWN");
+
+}
+void Go_Straight_Forward(){
+  //Function for driving the robot straight forward
+  Serial.println("STRAIGHT FORWARD");
+
+}
+void Go_Straight_Backward(){
+  //Function for driving the robot straight backward
+  Serial.println("STRAIGHT BACKWARD");
+  
+}
+void turn_Slight_Left(){
+  //Function for driving the robot slight left
+  Serial.println("SLIGHT LEFT");
+  
+}
+void turn_Slight_Right(){
+  //Function for driving the robot slight right
+  Serial.println("SLIGHT RIGHT");
+  
+}
+void turn_Back_Right(){
+  //Function for driving the robot back right
+  Serial.println("BACK RIGHT");
+  
+}
+void turn_Back_Left(){
+  //Function for driving the robot back left
+  Serial.println("BACK LEFT");
+  
+}
+
+
+
+
+
+
+
 void MotorControl(){
   //Start by moving servo motor to minimum angle
   RadarMotor.write(minAngle);
@@ -70,11 +171,11 @@ void MotorControl(){
 
 void CalculateDistance(){
   //Declaring variables to store the different angles
-  int angle1 = 30;
+  /*int angle1 = 30;
   int angle2 = 56;
   int angle3 = 82;
   int angle4 = 108;
-  int angle5 = 135;
+  int angle5 = 135;*/
 
   //Triger the ultrasonic sensor
   digitalWrite(TrigPin, LOW); //Trigerint the triger pin low first and delaying for 10 microseconds
@@ -159,57 +260,45 @@ void det_Direction(){
       if (min_Dis > minDis_Lim && max_Dis > minDis_Lim)
         {
           //Call funtion to move the robot strait forward
+          Serial.println("Call funtion to move the robot strait forward");
 
         }
         else if((distanceArray[0] <= minDis_Lim) && (distanceArray[1] > minDis_Lim && distanceArray[2] > minDis_Lim))
         {
           // Call a function to turn the robot slight left until the distance from the obstacle is large enough for robot to pass
+          Serial.println("Call a function to turn the robot slight left");
 
         }
         else if((distanceArray[4] <= minDis_Lim) && (distanceArray[3] > minDis_Lim && distanceArray[2] > minDis_Lim))
         {
           // Call a function to turn the robot slight right until the distance from the obstacle is large enough for robot to pass
-
+          Serial.println("Call a function to turn the robot slight right");
 
         }
         else if((distanceArray[2] <= 18) && (distanceArray[3] > 18 && distanceArray[4] > minDis_Lim))
         {
           // Call a function to turn the robot slight left 
-
+          Serial.println("Call a function to turn the robot slight left");
         }
       else if((distanceArray[2] <= 18) && (distanceArray[1] > 18 && distanceArray[0] > minDis_Lim))
         {
-          // Call a function to turn the robot slight right 
+          // Call a function to turn the robot slight right
+          Serial.println("Call a function to turn the robot slight right"); 
 
         }
         else if (max_Dis <= minDis_Lim)
         {
           // Call a function to reverse the robot straight
+          Serial.println("Call a function to reverse the robot straight");
 
         }
         else
         {
           // Go forward
+          Serial.println("Go forward");
+
         }
 
 }
 
-void Go_Straight_Forward(){
-  //Function for driving the robot straight forward
 
-}
-
-void Go_Straight_Backward(){
-  //Function for driving the robot straight backward
-  
-}
-
-void turn_Slight_Left(){
-  //Function for driving the robot slight left
-  
-}
-
-void turn_Slight_Right(){
-  //Function for driving the robot slight right
-  
-}
