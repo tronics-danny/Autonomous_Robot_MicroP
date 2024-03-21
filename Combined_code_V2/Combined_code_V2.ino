@@ -71,19 +71,27 @@ int UltraRead(){
 
 void DirControl(){
   //Determine the direction in which the robot should go into
-
   //Variable to store the current distance from the obstacle
   int dist = 0;
 
-  ServoControl(angle3);
+  //move servo to make ultrasonic face in forward direction
+  RadarMotor.write(angle0);
   dist = UltraRead();
-  if(dist<minDis_Lim && dist>0)
+  if(dist > minDis_Lim && dist>0)
     {
       //Stop the robot, check for obstacles in the other angles
       Stop();
-      
-      ServoControl(angle2);
-      dist = UltraRead();
+      CompareDist();    
+    }  
+  else if(dist < minDis_Lim && dist>0)
+    {
+      //Stop the robot, check for obstacles in the other angles
+      Stop();
+      CompareDist();    
+    }
+  else
+    {
+
 
     }
 
@@ -91,7 +99,8 @@ void DirControl(){
 
 void CompareDist(){
     int angle1 = 30;
-    int angle5 = 135;
+    int angle2 = 135;
+    int angle0 = 82;
 
     //Move servo motor to the right
     RadarMotor.write(angle1);
@@ -99,10 +108,12 @@ void CompareDist(){
     int distR = UltraRead();
     delay(100);
     //Move servo motor to the left
-    RadarMotor.write(angle);
+    RadarMotor.write(angle2);
     delay(500);
     int distL = UltraRead();
     delay(100);
+    //Move motor to face ultrasonic forward
+    RadarMotor.write(angle0);
     
     if (distR > distL)
       {
