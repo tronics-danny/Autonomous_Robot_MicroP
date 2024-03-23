@@ -140,7 +140,8 @@ void CompareDist(){
         delay(350);
       } 
 
-}
+}   
+
 
 void Stop(){
   //Function for stopping the robot

@@ -126,64 +126,6 @@ void loop() {
   Serial.println();
   delay(1);
 
-
-  /*
-  //Setting a target for the motor
-  int target_MA = 1200;
-  int target_MB = 1200;
-
-  //Defining PID control constants
-  float Kp = 1;
-  float Kd = 0;
-  float Ki = 0;
-
-  // Computing the time difference
-  //Current time in microseconds
-  long currT = micros();
-  //Calculating delta T
-  float deltaT= ((float)(currT-prevT))/1.0e6;
-  //setting the previous time to be the current time
-  prevT = currT;
-
-  //Calculating the error
-  int e_MA = Motor_A_Pos-target_MA;
-  int e_MB = Motor_B_Pos-target_MB;
-
-  //Calcualting the derivative
-  float derA = (e_MA-eprev_MA)/(deltaT);
-  float derB = (e_MB-eprev_MB)/(deltaT);
-
-  // Calculating the integral
-  eintegral_MA = eintegral_MA + e_MA*deltaT;
-  eintegral_MB = eintegral_MB + e_MB*deltaT;
-
-  //Computing the control signal
-  float u_MA = Kp*e_MA + Kd*derA + Ki*eintegral_MA;
-  float u_MB = Kp*e_MB + Kd*derB + Ki*eintegral_MB;
-
-  //calling the setMotor funtion to drive motor A
-  setMotor(1, 100, enA, en1, en2);
-  setMotor(-1, 100, enB, en3, en4);
-  delay(1000);
-  setMotor(-1, 100, enA, en1, en2);
-  setMotor(+1, 100, enB, en3, en4);
-  delay(1000);
-  setMotor(0, 100, enA, en1, en2);
-  setMotor(0, 100, enB, en3, en4);
-  delay(1000);
-  */
-
-  /*
-  //Reading outputs from the encoder
-  //Serial.print("Position for motor A: ");
-  Serial.print(motorA_pos);
-  Serial.print(",");
-  //Serial.print("Position for motor B: ");
-  Serial.print(motorB_pos);
-  Serial.print(",");
-  Serial.println(); 
-  */
-
 }
 
 void setMotor(int dir, int pwmVal, int m_pin, int in1, int in2){
