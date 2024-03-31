@@ -1,0 +1,193 @@
+#include <Servo.h> 
+//Servo Myservo;
+#define trigPin 33           // Trig Pin Of HC-SR04
+#define echoPin 35        // Echo Pin Of HC-SR04
+#define servo 10
+#define enA 4//Enable1 L298 Pin enA 
+#define in1 5 //Motor1  L298 Pin in1 
+#define in2 6 //Motor1  L298 Pin in1 
+#define in3 7 //Motor2  L298 Pin in1 
+#define in4 8 //Motor2  L298 Pin in1 
+#define enB 9 //Enable2 L298 Pin enB 
+int green1 = 30;
+int green2 = 34;
+long duration, distance;
+int distance_L, distance_F, distance_R;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(in1, OUTPUT);     // Set Motor Pins As O/P
+  pinMode(in2, OUTPUT);
+  pinMode(in3, OUTPUT);
+  pinMode(in4, OUTPUT);
+  pinMode(trigPin, OUTPUT);       // Set Trig Pin As O/P To Transmit Waves
+  pinMode(echoPin, INPUT);        //Set Echo Pin As I/P To Receive Reflected Waves
+  //Myservo.attach(10);
+}
+void loop() 
+{
+  Serial.begin(9600);
+  Ultrasonic_read();
+  servoPulse(servo, 82);
+  if (distance > 15)               // Condition For Absence Of Obstacle            
+  {
+    //int angle;
+    //servoPulse(servo, 82);
+    forward();
+    forwardLED();                                            
+  }
+  else           // Condition For Presence Of Obstacle
+  {
+    stop();
+    Check_side();
+    servoPulse(servo, 82);
+  }
+}
+
+void servoPulse (int pin, int angle)
+{
+ int pwm = (angle*11) + 500;      // Convert angle to microseconds
+ digitalWrite(pin, HIGH);
+ delayMicroseconds(pwm);
+ digitalWrite(pin, LOW);
+ delay(50); // Refresh cycle of servo
+}
+
+long Ultrasonic_read()
+{
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);   
+  digitalWrite(trigPin, HIGH);       // Transmit Waves For 10us
+  delayMicroseconds(10);
+  duration = pulseIn(echoPin, HIGH);        // Receive Reflected Waves
+  distance = duration*0.034/2;                       // Get Distance
+  Serial.println(distance);
+  delay(10);
+}
+
+void Check_side()
+{
+  //stop();
+  delay(300);
+  for (int angle = 25; angle <= 150; angle += 2)  
+  {
+    servoPulse(servo, angle);  
+  }
+  delay(300);
+  turnRight();
+  delay(2000);
+  forward();
+  //distance_R = Ultrasonic_read();
+  //Serial.print("D R=");
+  //Serial.println(distance_R);
+  //delay(100);
+  for (int angle = 150; angle >= 0; angle -= 2)  
+  {
+    servoPulse(servo, angle);  
+  }
+  delay(300);
+  turnLeft();
+  delay(2000);
+  forward();
+  //distance_L = Ultrasonic_read();
+  //Serial.print("D L=");
+  //Serial.println(distance_L);
+  //delay(100);
+  for (int angle = 0; angle <= 82; angle += 2)  
+  {
+    servoPulse(servo, angle);  
+  }
+  delay(300);
+  //compareDistance();
+}
+
+void compareDistance()
+{
+  if(distance_L > distance_R)
+  {
+    turnLeft();
+    delay(200);
+    forward();
+    //delay(600);
+    //turnRight();
+    //delay(500);
+    //forward();
+    //delay(600);
+    //turnRight();
+    //delay(400);
+  }
+  else
+  {
+    turnRight();
+    delay(200);
+    forward();
+    //delay(600);
+    //turnLeft();
+    //delay(500);
+    //forward();
+    //delay(600);  
+    //turnLeft();
+    //delay(400);
+  }
+}
+
+void forward()
+{
+    servoPulse(servo, 82);
+    analogWrite(enA,110);
+    analogWrite(enB,80);
+    digitalWrite(in1, HIGH); //Left Motor backword Pin 
+    digitalWrite(in2, LOW); //Left Motor forword Pin 
+    digitalWrite(in3, LOW); //Right Motor forword Pin 
+    digitalWrite(in4, HIGH); //Right Motor backword Pin  
+}
+
+void stop()
+{
+    digitalWrite(in1, LOW); //Left Motor backword Pin 
+    digitalWrite(in2, LOW); //Left Motor forword Pin 
+    digitalWrite(in3, LOW); //Right Motor forword Pin 
+    digitalWrite(in4, LOW); //Right Motor backword Pin 
+    //delay(100);
+}
+
+void turnRight()
+{ 
+  analogWrite(enA,150);
+  analogWrite(enB,40);
+  digitalWrite(in1, HIGH); //Left Motor backword Pin 
+  digitalWrite(in2, LOW); //Left Motor forword Pin 
+  digitalWrite(in3, LOW); //Right Motor forword Pin 
+  digitalWrite(in4, HIGH); //Right Motor backword Pin 
+}
+
+void turnLeft()
+{ 
+  analogWrite(enA,60);
+  analogWrite(enB,150);
+  digitalWrite(in1, HIGH); //Left Motor backword Pin 
+  digitalWrite(in2, LOW); //Left Motor forword Pin 
+  digitalWrite(in3, LOW); //Right Motor forword Pin 
+  digitalWrite(in4, HIGH); //Right Motor backword Pin 
+}
+
+void backward()
+{
+  analogWrite(enA,110);
+  analogWrite(enB,80);
+  digitalWrite(in1, LOW); //Left Motor backword Pin 
+  digitalWrite(in2, HIGH); //Left Motor forword Pin 
+  digitalWrite(in3, HIGH); //Right Motor forword Pin 
+  digitalWrite(in4, LOW); //Right Motor backword Pin 
+  delay(500);
+}
+
+void forwardLED()
+{
+  digitalWrite(green1, HIGH);
+  digitalWrite(green2, HIGH);
+  delay(400);
+  digitalWrite(green1, LOW);
+  digitalWrite(green2, LOW);
+  delay(300);
+}
