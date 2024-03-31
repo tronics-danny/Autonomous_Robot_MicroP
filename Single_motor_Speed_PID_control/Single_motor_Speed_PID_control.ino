@@ -88,8 +88,8 @@ void loop() {
   prevT = currT;
 
   //convert counts per sec to RPM
-  float v1 = velocity1/600.0*60.0;
-  float v2 = velocity2/600.0*60.0;
+  float v1 = velocity1/362.0*60.0;
+  float v2 = velocity2/362.0*60.0;
 
   //LowPass Filter for the velocities at (25 Hz Cut off frequency)
   v1Filt = 0.854*v1Filt + 0.0728*v1 + 0.0728*v1Prev;
@@ -174,4 +174,3 @@ void readEncoderA(){
 }
 
   
-
