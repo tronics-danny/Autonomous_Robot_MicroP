@@ -27,6 +27,9 @@ long prevT = 0; //previous time
 int posPrevA = 0; //previous position for motor A
 int posPrevB = 0; //previous position for motor B
 
+long currT = 0;
+float deltaT = 0; 
+
 //Gloabal variables to store the number of counts of the encoders
 volatile int pos_i_A = 0;
 volatile int pos_i_B = 0;
@@ -42,6 +45,10 @@ float v1PrevA = 0;
 float v2FiltB = 0;
 float v2PrevB = 0;
 
+//Global variable to store the integral error value
+float error1_integral = 0;
+float error2_integral = 0;
+
 
 // Defining variables to store the current distance
 float curr_Distance = 0;
@@ -55,6 +62,9 @@ float targetSpeed = 100;
 
 void setup() {
   Serial.begin(9600);
+
+  //Labels for the serial plotter motor encoder value outputs
+  Serial.println("Motor_A_Speed, Motor_B_Speed");
 
   //Labels for the serial plotter motor encoder value outputs
   //Serial.println("Motor_A_Pos, Motor_B_Pos");
@@ -118,12 +128,12 @@ void loop() {
   compareRPM(targetSpeed, v1, v2, 1, 1);
 
   //Print the velocities on the serial monitor
-  Serial.print(velocity1);
-  Serial.print(" ");
+  //Serial.print(velocity1);
+  //Serial.print(" ");
   Serial.print(v1);
   Serial.print(" ");
-  Serial.print(velocity2);
-  Serial.print(" ");
+  //Serial.print(velocity2);
+  //Serial.print(" ");
   Serial.print(v2);
   //Serial.print(" ");
   //Serial.print(velocityA);
@@ -138,16 +148,21 @@ void loop() {
 
 void compareRPM(int t_Speed, int rpm1, int rpm2, int dirA, int dirB){
   //compute the control signal u
-  float kp1 = 1;
-  float ki1 = 0;
-  float kp2 = 1;
-  float ki2 = 0;
+  float kp1 = 12;
+  float ki1 = 1;
+  float kp2 = 8.5;
+  float ki2 = 0.5;
 
   float error1 = t_Speed - rpm1;
   float error2 = t_Speed - rpm2;
 
-  float u1 = kp1*error1;
-  float u2 = kp2*error2;
+  //Computing the integral error
+  error1_integral = error1_integral + error1*deltaT;
+  error2_integral = error2_integral + error2*deltaT;
+
+  //Computing the control signal
+  float u1 = kp1*error1 + ki1*error1_integral;
+  float u2 = kp2*error2 + ki2*error2_integral;
 
   //set the motor direction and speed
   if (u1<0){
