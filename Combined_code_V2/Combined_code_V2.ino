@@ -9,8 +9,12 @@
 #define MotorB_ENCB 3
 
 //Defining Servo motor and ultrasonic sensor connected pins
-#define TrigPin 33
-#define EchoPin 35
+#define C_TrigPin 33 //Centre Ultrasonic sensor
+#define C_EchoPin 35
+#define L_TrigPin 38 //Left Ultrasonic sensor
+#define L_EchoPin 39
+#define R_TrigPin 36 //Right Ultrasonic sensor
+#define R_EchoPin 37
 #define ServoPin 10
 
 //Motor driver connections for motor A
@@ -50,13 +54,19 @@ float error1_integral = 0;
 float error2_integral = 0;
 
 
-// Defining variables to store the current distance
-float curr_Distance = 0;
+// Defining variables to store the ultrasonic sensor distances 
+float C_distance = 0;
+float L_distance = 0;
+float R_distance = 0;
 
+// Defining min distances to be detected
+float C_distance_Min = 10; //min distance for the centre ultrasonic sensors
+float S_distance_Min = 10; //min distance for the side's ultasonic sensors
 
 
 //Defining the constant target speed of every motor
-float targetSpeed = 100;
+float targetSpeedA = 100;
+float targetSpeedB = 100;
 
 
 
@@ -66,11 +76,14 @@ void setup() {
   //Labels for the serial plotter motor encoder value outputs
   Serial.println("Motor_A_Speed, Motor_B_Speed");
 
-  //Labels for the serial plotter motor encoder value outputs
-  //Serial.println("Motor_A_Pos, Motor_B_Pos");
+  //setting ultrasonic sensor pins
+  pinMode(C_TrigPin, OUTPUT);
+  pinMode(C_EchoPin, INPUT);
+  pinMode(L_TrigPin, OUTPUT);
+  pinMode(L_EchoPin, INPUT);
+  pinMode(R_TrigPin, OUTPUT);
+  pinMode(R_EchoPin, INPUT);
 
-  pinMode(TrigPin, OUTPUT);
-  pinMode(EchoPin, INPUT);
   pinMode(ServoPin, OUTPUT);
 
   //setting up encoder pins for the motors as inputs to the microcontroller
@@ -93,6 +106,9 @@ void setup() {
 }
 
 void loop() {
+  //calling the read Utrasonic function
+  UltraRead();
+
   float velocityA = 0;
   float velocityB = 0;
   int pos1 = 0;
@@ -125,7 +141,7 @@ void loop() {
   v2PrevB = v2;
 
   //a function called that will drive the two motors at 100rpm
-  compareRPM(targetSpeed, v1, v2, 1, 1);
+  compareRPM(targetSpeedA, targetSpeedB, v1, v2, 1, 1);
 
   //Print the velocities on the serial monitor
   //Serial.print(velocity1);
@@ -146,15 +162,15 @@ void loop() {
 
 }
 
-void compareRPM(int t_Speed, int rpm1, int rpm2, int dirA, int dirB){
+void compareRPM(int t_SpeedA, int t_SpeedB, int rpm1, int rpm2, int dirA, int dirB){
   //compute the control signal u
   float kp1 = 12;
   float ki1 = 1;
   float kp2 = 8.5;
   float ki2 = 0.5;
 
-  float error1 = t_Speed - rpm1;
-  float error2 = t_Speed - rpm2;
+  float error1 = t_SpeedA - rpm1;
+  float error2 = t_SpeedB - rpm2;
 
   //Computing the integral error
   error1_integral = error1_integral + error1*deltaT;
@@ -268,24 +284,36 @@ void readEncoderB(){
 
 }
 
-/*int UltraRead(){
-  //Read detected distance by ultrasonic
+int UltraRead(){
+  //Read detected distance by the three ultrasonic sensors
   //Triger the ultrasonic sensor low
-  digitalWrite(TrigPin, LOW); 
+  digitalWrite(C_TrigPin, LOW);
+  digitalWrite(L_TrigPin, LOW);
+  digitalWrite(R_TrigPin, LOW); 
   delayMicroseconds(2);
-
   //Triger the ultrasonic sensor High and delay for 10 micro-seconds then trig low
-  digitalWrite(TrigPin, HIGH);
+  digitalWrite(C_TrigPin, HIGH);
+  digitalWrite(L_TrigPin, HIGH);
+  digitalWrite(R_TrigPin, HIGH);
   delayMicroseconds(10);
-  digitalWrite(TrigPin, LOW);
+  digitalWrite(C_TrigPin, LOW);
+  digitalWrite(L_TrigPin, LOW);
+  digitalWrite(R_TrigPin, LOW);
 
   //Calculate distance from object
-  long duration = pulseIn(EchoPin, HIGH);
-  curr_Distance = duration * 0.0344 / 2; // Expression to calculate distance using time
+  long C_duration = pulseIn(C_EchoPin, HIGH);
+  long L_duration = pulseIn(L_EchoPin, HIGH);
+  long R_duration = pulseIn(R_EchoPin, HIGH);
+  C_distance = C_duration * 0.0344 / 2; // Expression to calculate distance using time
+  L_distance = L_duration * 0.0344 / 2;
+  R_distance = R_duration * 0.0344 / 2;
 
-  return curr_Distance;
+}
 
-}*/
+void compare_distances(){
+  UltraRead();
+  if ()
+}
 
 
 
