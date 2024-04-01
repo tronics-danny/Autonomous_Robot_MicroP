@@ -131,6 +131,7 @@ void loop() {
     pos1 = pos_i_A;
     pos2 = pos_i_B;
     velocityA = -velocity_i_A;
+
     velocityB = velocity_i_B;
   }
 
@@ -154,10 +155,12 @@ void loop() {
   v2PrevB = v2;
 
   //a function called that will drive the two motors at 100rpm
-  //compareRPM(50, 50, v1, v2, 1, 1);
+  compareRPM(30, 30, v1, v2, 1, 1);
+  delay(1000);
+  rotate360();
   
   //Drive the robot
-  compare_distances();
+  //compare_distances();
 
   //Print the velocities on the serial monitor
   //Serial.print(velocity1);
@@ -176,6 +179,22 @@ void loop() {
   delay(1);
 
 
+}
+void rotate360(){
+  compareRPM(20, 8, v1, v2, 1, -1); 
+  delay(1000);
+  stop(); //stop
+  delay(3000);
+}
+
+void stop(){
+  //Motor to stop
+    analogWrite(enA, 0);
+    analogWrite(enB, 0);
+    digitalWrite(en1, LOW);
+    digitalWrite(en2, LOW);
+    digitalWrite(en3, LOW);
+    digitalWrite(en4, LOW);
 }
 
 void compareRPM(int t_SpeedA, int t_SpeedB, int rpm1, int rpm2, int dirA, int dirB){
@@ -300,97 +319,30 @@ void readEncoderB(){
 
 }
 
-int UltraRead_C(){
+float UltraRead(int trigPin, int echoPin){
   //Read detected distance by the three ultrasonic sensors
   //Triger the ultrasonic sensor low
-  digitalWrite(C_TrigPin, LOW); 
+  digitalWrite(trigPin, LOW); 
   delayMicroseconds(2);
   //Triger the ultrasonic sensor High and delay for 10 micro-seconds then trig low
-  digitalWrite(C_TrigPin, HIGH);
+  digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   //Calculate distance from object
-  long C_duration = pulseIn(C_EchoPin, HIGH);
+  long duration = pulseIn(echoPin, HIGH);
   // Expression to calculate distance using time
-  C_distance = C_duration * 0.0344 / 2; 
+  int distance = duration * 0.0344 / 2; 
 
-  if (C_distance < 15) { 
-        digitalWrite (Green_led_R, LOW);
-        digitalWrite (Green_led_L, LOW);
-        delay(100);
-        digitalWrite (Green_led_L, HIGH);
-        digitalWrite (Green_led_R, HIGH);
-        delay(50);
-      }
-    else {
-        digitalWrite (Green_led_R, HIGH);
-        digitalWrite (Green_led_L, HIGH);
-      }
-
-  return C_distance;
-  
-}
-
-int UltraRead_R(){
-  //Read detected distance by the three ultrasonic sensors
-  //Triger the ultrasonic sensor low
-  digitalWrite(R_TrigPin, LOW); 
-  delayMicroseconds(2);
-  //Triger the ultrasonic sensor High and delay for 10 micro-seconds then trig low
-  digitalWrite(R_TrigPin, HIGH);
-  delayMicroseconds(10);
-  //Calculate distance from object
-  long R_duration = pulseIn(R_EchoPin, HIGH);
-  // Expression to calculate distance using time
-  R_distance = R_duration * 0.0344 / 2; 
-
-    if (R_distance < 15) { 
-        digitalWrite (Green_led_R, LOW);
-        delay(100);
-        digitalWrite (Green_led_R, HIGH);
-        delay(50);
-      }
-    else {
-        digitalWrite (Green_led_R, HIGH);
-      }
-
-  return R_distance;
-  
-}
-
-int UltraRead_L(){
-  //Read detected distance by the three ultrasonic sensors
-  //Triger the ultrasonic sensor low
-  digitalWrite(L_TrigPin, LOW); 
-  delayMicroseconds(2);
-  //Triger the ultrasonic sensor High and delay for 10 micro-seconds then trig low
-  digitalWrite(L_TrigPin, HIGH);
-  delayMicroseconds(10);
-  //Calculate distance from object
-  long L_duration = pulseIn(L_EchoPin, HIGH);
-  // Expression to calculate distance using time
-  L_distance = L_duration * 0.0344 / 2;
-
-    //Blinking the LEDs to indicate detection
-    if (L_distance < 15) { 
-        digitalWrite (Green_led_L, LOW);
-        delay(100);
-        digitalWrite (Green_led_L, HIGH);
-        delay(50);
-      }
-    else {
-        digitalWrite (Green_led_L, HIGH);
-      }
-
-  return L_distance;
-  
+  return distance;
 }
 
 void compare_distances(){
   //call distance measuring functions
-  C_distance = UltraRead_C();
-  R_distance = UltraRead_R();
-  L_distance = UltraRead_L();
 
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+    C_distance = UltraRead(C_TrigPin, C_EchoPin);
+    R_distance = UltraRead(R_TrigPin, R_EchoPin);
+    L_distance = UltraRead(L_TrigPin, L_EchoPin);
+  }
 
   if (C_distance > C_distance_Min && L_distance > S_distance_Min && R_distance > S_distance_Min){
     //If there is no obstacle on any side, then move straight forward
@@ -406,8 +358,10 @@ void compare_distances(){
       delay(100);
 
       //call distance measuring functions
-        R_distance = UltraRead_R();
-        L_distance = UltraRead_L();
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+          R_distance = UltraRead(R_TrigPin, R_EchoPin);
+          L_distance = UltraRead(L_TrigPin, L_EchoPin);
+        }
 
       if (L_distance > S_distance_Min && L_distance > R_distance){
         //if distance on the left is greater than distance on the right, then move left
@@ -451,8 +405,10 @@ void compare_distances(){
       delay(300);
       compareRPM(0, 0, v1, v2, 0, 0); //stop
     //call distance measuring functions  
-      R_distance = UltraRead_R();
-      L_distance = UltraRead_L();
+      ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+        R_distance = UltraRead(R_TrigPin, R_EchoPin);
+        L_distance = UltraRead(L_TrigPin, L_EchoPin);
+      }
       delay(100);
     //compare the distances
       if (L_distance > R_distance){
@@ -477,6 +433,7 @@ void compare_distances(){
   }
 
 }
+
 
 
 
