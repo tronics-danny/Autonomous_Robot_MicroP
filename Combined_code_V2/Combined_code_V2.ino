@@ -232,6 +232,7 @@ void setMotorA(int dirA, int pwmValA){
     digitalWrite(en2, HIGH);
   }
   else{
+
     //Motor to stop
     digitalWrite(en1, LOW);
     digitalWrite(en2, LOW);
@@ -259,6 +260,7 @@ void setMotorB(int dirB, int pwmValB){
 }
 
 void readEncoderA(){
+  
   //Reading from the encoder output B
   int a = digitalRead(MotorA_ENCB);
   int incrementA = 0;
