@@ -17,11 +17,12 @@
 #define R_EchoPin 37
 #define ServoPin 10
 
-//defining pins for LEDs
+//defining pins for LEDs and buzzer
 int Green_led_R = 32;
 int Green_led_L = 28;
 int Red_led = 30;
 int Yellow_led = 34;
+int Buzzer = 25;
 
 //Motor driver connections for motor A
 int enA = 4; //PWM Signal for motor A
@@ -93,11 +94,12 @@ void setup() {
   pinMode(R_TrigPin, OUTPUT);
   pinMode(R_EchoPin, INPUT);
 
-  //Setting Led pins
+  //Setting Led pins and buzzer pin
   pinMode(Green_led_R, OUTPUT);
   pinMode(Green_led_L, OUTPUT);
   pinMode(Red_led, OUTPUT);
   pinMode(Yellow_led, OUTPUT);
+  pinMode(Buzzer, OUTPUT);
 
   pinMode(ServoPin, OUTPUT);
 
@@ -131,7 +133,6 @@ void loop() {
     pos1 = pos_i_A;
     pos2 = pos_i_B;
     velocityA = -velocity_i_A;
-
     velocityB = velocity_i_B;
   }
 
@@ -155,12 +156,12 @@ void loop() {
   v2PrevB = v2;
 
   //a function called that will drive the two motors at 100rpm
-  compareRPM(30, 30, v1, v2, 1, 1);
-  delay(1000);
-  rotate360();
+  //compareRPM(30, 30, v1, v2, 1, 1);
+  //delay(1000);
+  //rotate180();
   
   //Drive the robot
-  //compare_distances();
+  compare_distances();
 
   //Print the velocities on the serial monitor
   //Serial.print(velocity1);
@@ -179,22 +180,6 @@ void loop() {
   delay(1);
 
 
-}
-void rotate360(){
-  compareRPM(20, 8, v1, v2, 1, -1); 
-  delay(1000);
-  stop(); //stop
-  delay(3000);
-}
-
-void stop(){
-  //Motor to stop
-    analogWrite(enA, 0);
-    analogWrite(enB, 0);
-    digitalWrite(en1, LOW);
-    digitalWrite(en2, LOW);
-    digitalWrite(en3, LOW);
-    digitalWrite(en4, LOW);
 }
 
 void compareRPM(int t_SpeedA, int t_SpeedB, int rpm1, int rpm2, int dirA, int dirB){
@@ -335,6 +320,48 @@ float UltraRead(int trigPin, int echoPin){
   return distance;
 }
 
+void rotate180(){
+  compareRPM(20, 8, v1, v2, 1, -1); 
+  delay(1000);
+  stop(); //stop
+  delay(1000);
+}
+
+void stop(){
+  //Motor to stop
+    analogWrite(enA, 0);
+    analogWrite(enB, 0);
+    digitalWrite(en1, LOW);
+    digitalWrite(en2, LOW);
+    digitalWrite(en3, LOW);
+    digitalWrite(en4, LOW);
+}
+
+void moveBack_indicator(){
+  digitalWrite (Red_led, LOW);
+  digitalWrite (Yellow_led, LOW);
+  tone(Buzzer, 1000); // Send 1KHz sound signal...
+  delay(100);
+  digitalWrite (Yellow_led, HIGH);
+  digitalWrite (Red_led, HIGH);
+  noTone(Buzzer);     // Stop sound...
+  delay(100);
+}
+
+void leftObstacle(){
+  digitalWrite (Green_led_L, LOW);
+  delay(100);
+  digitalWrite (Green_led_L, HIGH);
+  delay(50);
+}
+
+void rightObstacle(){
+  digitalWrite (Green_led_R, LOW);
+  delay(100);
+  digitalWrite (Green_led_R, HIGH);
+  delay(50);
+}
+
 void compare_distances(){
   //call distance measuring functions
 
@@ -345,23 +372,25 @@ void compare_distances(){
   }
 
   if (C_distance > C_distance_Min && L_distance > S_distance_Min && R_distance > S_distance_Min){
-    //If there is no obstacle on any side, then move straight forward
-      compareRPM(70, 70, v1, v2, 1, 1);
+    //If there is no obstacle on any side, then move straight forward at 50rpm
+      compareRPM(50, 50, v1, v2, 1, 1);
    }
   else if (C_distance < C_distance_Min && L_distance < S_distance_Min && R_distance < S_distance_Min){ 
     //If there is an obstacle on the three sides, move back, compare left and right distances, select which distance to move into
-      compareRPM(0, 0, v1, v2, 0, 0); //stop
-      delay(200);
-      compareRPM(50, 50, v1, v2, -1, -1); //move back
-      delay(200);
-      compareRPM(0, 0, v1, v2, 0, 0); //stop
+      stop(); //stop the robot
+      rightObstacle();
+      leftObstacle();
       delay(100);
-
+      compareRPM(50, 50, v1, v2, -1, -1); //move back
+      moveBack_indicator();
+      delay(100);
+      stop(); //stop
       //call distance measuring functions
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
           R_distance = UltraRead(R_TrigPin, R_EchoPin);
           L_distance = UltraRead(L_TrigPin, L_EchoPin);
         }
+      delay(100);
 
       if (L_distance > S_distance_Min && L_distance > R_distance){
         //if distance on the left is greater than distance on the right, then move left
@@ -371,39 +400,41 @@ void compare_distances(){
       }
       else if (R_distance > S_distance_Min && R_distance > L_distance){
         //if distance on the right is greater than distance on the left, then move right
-          compareRPM(50, 20, v1, v2, 1, 1); //move left
+          compareRPM(50, 20, v1, v2, 1, 1); //move right
           delay(200);
           //compare_distances();
       }
       else{
         //rotate for to face back
-          compareRPM(20, 20, v1, v2, -1, 1); 
-          delay(200);
-          compareRPM(0, 0, v1, v2, 0, 0); //stop
-          delay(100);
+          rotate180();
           //compare_distances();
       }
  
   }
   else if (C_distance > C_distance_Min && L_distance > S_distance_Min && R_distance < S_distance_Min){
     //If there is an obstacle on right side, then move slight  left
-      compareRPM(50, 70, v1, v2, 1, 1);
+      compareRPM(20, 50, v1, v2, 1, 1); //move left
+      rightObstacle();
       delay(200);
       //compare_distances();
   }
   else if (C_distance > C_distance_Min && R_distance > S_distance_Min && L_distance < S_distance_Min){
     //If there is an obstacle on left side, then move slight  right
-      compareRPM(70, 50, v1, v2, 1, 1);
+      compareRPM(50, 20, v1, v2, 1, 1);
+      leftObstacle();
       delay(200);
       //compare_distances();
   }
   else if (C_distance < C_distance_Min && R_distance > S_distance_Min && L_distance > S_distance_Min){
     //If there is an obstacle on the front side, move back, compare left and right distances, select which distance to move into
-      compareRPM(0, 0, v1, v2, 0, 0); //stop
-      delay(200);
+      stop(); //stop
+      rightObstacle();
+      leftObstacle();
+      delay(100);
       compareRPM(50, 50, v1, v2, -1, -1); //move back
-      delay(300);
-      compareRPM(0, 0, v1, v2, 0, 0); //stop
+      moveBack_indicator();
+      delay(100);
+      stop(); //stop
     //call distance measuring functions  
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
         R_distance = UltraRead(R_TrigPin, R_EchoPin);
@@ -413,21 +444,18 @@ void compare_distances(){
     //compare the distances
       if (L_distance > R_distance){
         //if distance on the left is greater than distance on the right, then move left
-          compareRPM(50, 70, v1, v2, 1, 1);
+          compareRPM(20, 50, v1, v2, 1, 1);
           delay(200);
       }
       else if (R_distance > L_distance){
         //if distance on the right is greater than distance on the left, then move right
-          compareRPM(70, 50, v1, v2, 1, 1); //move left
+          compareRPM(50, 20, v1, v2, 1, 1); //move right
           delay(200);
           //compare_distances();
       }
       else{
         //rotate for to face back
-          compareRPM(20, 20, v1, v2, -1, 1); 
-          delay(200);
-          compareRPM(0, 0, v1, v2, 0, 0); //stop
-          delay(100);
+          rotate180();
           //compare_distances();
       }
   }
